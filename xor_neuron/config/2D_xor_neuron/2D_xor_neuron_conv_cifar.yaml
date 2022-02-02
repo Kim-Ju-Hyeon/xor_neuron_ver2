@@ -1,0 +1,68 @@
+---
+exp_name: 1 # ---> 1,2,3,4,5...
+exp_dir: ../time_check/2D_ARG/Conv/CIFAR10 # ---> 0421_conv_cifar_expMode
+
+runner: XorNeuronRunner
+use_gpu: true
+gpus: [0]
+seed: 1101 # 1101 ~ 1124
+
+# ---- EXP Mode ---- #
+without_pretrain: False # ---> True: xavier_inner_net
+to_save_cell: False  # ---> save epoch by epcoh
+
+dataset:
+  name: cifar10  # cifar100
+  loader_name: InnerNetData   # exp 1D ---> InnerNetData_1D
+  data_path: ./xor_neuron_data/data
+  split: train
+
+model:
+  name: ComplexNeuronConv
+  num_cell_types: 1
+  inner_net: conv
+  input_channel: 3 # 1(mnist)/3(cifar10)
+  arg_in_dim: 2
+  in_channel: 64
+  out_channel: [60, 120, 120, 120] #[66, 132, 132, 126]
+  kernel_size: [3, 3, 3, 1]
+  zero_pad: [0, 0, 0, 0]
+  stride: [1, 1, 1, 1]
+  dropout: 0.5
+  num_classes: 10
+  loss: CrossEntropy
+
+pretrain:
+  optimizer: Adam
+  num_workers: 0
+  max_epoch: 1  # ---> 1D-arg: 50000   2D-arg: 500
+  batch_size: 100
+  snapshot_epoch: 1000
+  lr: 1.0e-3
+  wd: 0.0e-4
+  momentum: 0.9
+  shuffle: true
+  best_model: [ /model_snapshot_best_pretrained1.pth]
+
+train:
+  optimizer: Adam
+  lr_decay: 0.1
+  lr_decay_steps: [10000]
+  num_workers: 0
+  max_epoch: 200
+  batch_size: 200
+  display_iter: 5000
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  lr: 1.0e-3
+  wd: 0.0e-4
+  momentum: 0.9
+  shuffle: true
+  is_resume: false
+  resume_model: None
+  best_model: /model_snapshot_best_phase1.pth
+
+test:
+  batch_size: 200
+  num_workers: 0
+  test_model: /model_snapshot_best_phase2.pth

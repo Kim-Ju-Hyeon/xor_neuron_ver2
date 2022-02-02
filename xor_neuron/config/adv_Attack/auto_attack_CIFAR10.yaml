@@ -1,0 +1,11 @@
+---
+runner: XorNeuronAttack
+
+attack:
+  name: AutoAttack # FGM, FGSM, L2PGD, LinfPGD, PGD
+
+name: AutoAttack # FGM, FGSM, L2PGD, LinfPGD, PGD
+batch_size: 128
+norm: Linf # Linf, L2, L1
+epsilon: [0.031]   # MNIST = 0.3 CIFAR10 = 0.031
+

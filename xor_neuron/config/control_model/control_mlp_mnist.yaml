@@ -1,0 +1,55 @@
+---
+exp_name: 1  # ---> 1,2,3,4,5...
+exp_dir: ../Control_activation_fnc_EXP/MLP/MNIST  # ---> 0421_mlp_mnist_expMode
+
+runner: XorNeuronRunner
+use_gpu: True
+gpus: [0]
+seed: 12345
+
+# ------------------------------------------#
+without_pretrain: False
+to_save_cell: False
+# ------------------------------------------#
+
+pretrain: None
+
+dataset:
+  name: mnist
+  loader_name: InnerNetData
+  data_path: ./xor_neuron_data/data
+  split: train
+
+model:
+  name: Control_MLP
+  input_dim: 784 #784(mnist)/3072(cifar10)
+  hidden_dim: [118, 118, 118]
+  dropout: 0.5
+  num_classes: 10
+  loss: CrossEntropy
+  num_cell_types: 1
+  activation_fnc: ReLU # ELU, LeakyReLU, PReLU, SELU, CELU, GELU, SiLU
+
+
+train:
+  optimizer: Adam
+  lr_decay: 0.1
+  lr_decay_steps: [10000]
+  num_workers: 0
+  max_epoch: 200
+  batch_size: 256
+  display_iter: 500
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  lr: 1.0e-3
+  wd: 0.0e-4
+  momentum: 0.9
+  shuffle: true
+  is_resume: false
+  resume_model: None
+  best_model: /model_snapshot_best_control.pth
+
+test:
+  batch_size: 256
+  num_workers: 0
+  test_model: /model_snapshot_best_control.pth
