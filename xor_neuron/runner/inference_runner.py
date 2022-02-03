@@ -26,7 +26,7 @@ from utils.logger import get_logger
 from utils.train_helper import data_to_gpu, snapshot, load_model, \
     EarlyStopper, save_outphase, make_mask
 from utils.corpus import Corpus
-from utils.WarmupCosineLR import WarmupCosineLR
+from utils.cosine_annealing_warmup import WarmupCosineLR
 
 
 from six.moves import urllib

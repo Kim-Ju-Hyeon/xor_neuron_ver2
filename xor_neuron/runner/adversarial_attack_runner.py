@@ -17,7 +17,6 @@ from model import *
 from model.model_for_foolbox import *
 from utils.train_helper import load_model
 from utils.logger import get_logger
-from utils.corpus import Corpus
 
 from autoattack import AutoAttack
 from autoattack import checks
@@ -115,8 +114,8 @@ class XorNeuronAttack(object):
         else:
             raise ValueError("Non-supported Attack!")
 
-        model.eval()
-        fmodel = PyTorchModel(model, bounds=bounds, device=device, preprocessing=preprocessing)
+        self.model.eval()
+        fmodel = PyTorchModel(self.model, bounds=bounds, device=device, preprocessing=preprocessing)
 
         score = torch.zeros(len(epsilons))
         correct = 0
@@ -172,7 +171,7 @@ class XorNeuronAttack(object):
         device = torch.cuda.current_device()
 
         if self.use_gpu:
-            model = nn.DataParallel(self.model).cuda()
+            self.model = nn.DataParallel(self.model).cuda()
 
         preprocessing_mean = attack_config.preprocessing.mean
         preprocessing_std = attack_config.preprocessing.std
@@ -189,8 +188,8 @@ class XorNeuronAttack(object):
 
         init_attack = LinearSearchBlendedUniformNoiseAttack(steps=2000)
 
-        model.eval()
-        fmodel = PyTorchModel(model, bounds=bounds, device=device, preprocessing=preprocessing)
+        self.model.eval()
+        fmodel = PyTorchModel(self.model, bounds=bounds, device=device, preprocessing=preprocessing)
 
         total = 0
         correct = 0

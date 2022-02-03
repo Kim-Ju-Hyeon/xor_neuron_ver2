@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="2111a87c-158d-43c3-b76f-a861f6de4a05" name="DGX">
+        <fileTransfer accessType="SFTP" host="192.168.1.10" port="22" sshConfigId="5382e4c7-45c9-467e-a5d6-758ab5c61be1" sshConfig="nvidia@192.168.1.10:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

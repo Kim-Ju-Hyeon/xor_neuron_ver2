@@ -25,10 +25,6 @@ model:
   input_channel: 3 # 1(mnist)/3(cifar10)
   arg_in_dim: 2
   in_channel: 16
-#  out_channel: [60, 120, 120, 120] #[66, 132, 132, 126]
-#  kernel_size: [3, 3, 3, 1]
-#  zero_pad: [0, 0, 0, 0]
-#  stride: [1, 1, 1, 1]
   num_blocks: [1,1,1]
 
   dropout: 0.5
@@ -51,12 +47,8 @@ train:
   optimizer: SGD
   lr_decay: 0.1
   lr_decay_steps: [10000]
-  num_workers: 0
   max_epoch: 3
   batch_size: 128
-  display_iter: 5000
-  snapshot_epoch: 1000
-  valid_epoch: 1
   lr: 1.0e-3
   wd: 0.0e-4
   momentum: 0.9

@@ -1,32 +1,22 @@
 from __future__ import (division, print_function)
 import os
-import numpy as np
 import pickle
 from collections import defaultdict
 from tqdm import tqdm
-from collections import OrderedDict
-
 import time
-
-import torch
 import torch.nn as nn
 import torch.utils.data
 import torch.optim as optim
 from torchvision import transforms, datasets
-from torch.utils.data import DataLoader, random_split, ConcatDataset
-from torch.utils.tensorboard.writer import SummaryWriter
+from torch.utils.data import DataLoader, random_split
 
-from scipy.signal import convolve2d
-from scipy.stats import multivariate_normal
 
 from model import *
-from dataset.innernet_data import InnerNetData, InnerNetData_1D, InnerNetData_3D
-from utils.slack import *
+
 from utils.logger import get_logger
-from utils.train_helper import data_to_gpu, snapshot, load_model, \
-    EarlyStopper, save_outphase, make_mask
-from utils.WarmupCosineLR import WarmupCosineLR
-from utils.corpus import Corpus
+from utils.train_helper import snapshot, load_model
+
+from utils.cosine_annealing_warmup import CosineAnnealingWarmUpRestarts
 
 from six.moves import urllib
 
@@ -34,8 +24,6 @@ logger = get_logger('exp_logger')
 opener = urllib.request.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
 urllib.request.install_opener(opener)
-
-# logger = get_logger('exp_logger')
 EPS = float(np.finfo(np.float32).eps)
 __all__ = ['ResnetRunner']
 
@@ -60,7 +48,7 @@ class ResnetRunner(object):
         print("Pretraining Start")
         print("-----------------------------------------------------------------")
 
-        self.config.seed = int(str(self.seed) + str(cell_type))
+        self.config.seed = self.seed
         train_dataset = eval(self.dataset_conf.loader_name)(self.config, split='train')
         train_loader = torch.utils.data.DataLoader(
             train_dataset,
@@ -77,6 +65,7 @@ class ResnetRunner(object):
 
         # create optimizer
         params = filter(lambda p: p.requires_grad, model.parameters())
+
         if self.pretrain_conf.optimizer == 'SGD':
             optimizer = optim.SGD(
                 params,
@@ -93,6 +82,7 @@ class ResnetRunner(object):
 
         # reset gradient
         optimizer.zero_grad()
+
         best_train_loss = np.inf
         for epoch in range(self.pretrain_conf.max_epoch):
             train_loss = []
@@ -155,7 +145,6 @@ class ResnetRunner(object):
                     [transforms.ToTensor(), transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2471, 0.2435, 0.2616])]),
                                            download=True)
 
-            # train_dataset, val_dataset = random_split(train_dataset, [40000, 10000])
 
         elif self.dataset_conf.name == 'cifar100':
             transform = transforms.Compose(
@@ -206,17 +195,9 @@ class ResnetRunner(object):
         else:
             raise ValueError("Non-supported optimizer!")
 
-
-        total_steps = len(train_loader) * self.train_conf.max_epoch
-
-        # lr_scheduler = WarmupCosineLR(
-        #         optimizer, warmup_epochs=total_steps * 0.3, max_epochs=total_steps
-        #     )
-
-        lr_scheduler = optim.lr_scheduler.MultiStepLR(
-            optimizer,
-            milestones=self.train_conf.lr_decay_steps,
-            gamma=self.train_conf.lr_decay)
+        lr_scheduler = CosineAnnealingWarmUpRestarts(
+                optimizer, T_0=50, T_mult=1, eta_max=0.1,  T_up=10, gamma=0.5
+            )
 
         # reset gradient
         optimizer.zero_grad()
@@ -234,18 +215,12 @@ class ResnetRunner(object):
         best_val_loss = np.inf
         best_val_acc = np.inf
 
-        forward_time_list = []
-        backward_time_list = []
-
         for epoch in range(self.train_conf.max_epoch):
             # ===================== validation ============================ #
             model.eval()
             val_loss = []
             correct = 0
             total = 0
-
-            cnt = 0
-            in2cells = []
 
             for imgs, labels in tqdm(val_loader):
                 if self.use_gpu:
@@ -311,16 +286,12 @@ class ResnetRunner(object):
                     imgs, labels = imgs.cuda(), labels.cuda()
 
                 # 1. forward pass
-
                 # 2. compute loss
-                forward_start = time.time()
                 _, loss, _ = model(imgs, labels)
-                forward_time = time.time() - forward_start
 
                 # 3. backward pass (accumulates gradients).
                 backward_start = time.time()
                 loss.backward()
-                backward_time = time.time() - backward_start
                 # 4. performs a single update step.
                 optimizer.step()
 
@@ -328,26 +299,12 @@ class ResnetRunner(object):
                 results['train_loss'] += [train_loss]
                 results['train_step'] += [iter_count]
 
-                # display loss
-                if (iter_count + 1) % self.train_conf.display_iter == 0:
-                    self.logger.info(
-                        "Train Loss @ epoch {} iteration {} = {}".format(epoch + 1, iter_count + 1, train_loss))
-
-                iter_count += 1
-
             lr_scheduler.step()
 
         results['best_val_loss'] += [best_val_loss]
         results['best_val_acc'] += [best_val_acc]
         results['best_val_epoch'] = best_val_epoch
 
-        forward_time_list = np.array(forward_time_list)
-        backward_time_list = np.array(backward_time_list)
-
-        time_dict = {'Forward': forward_time_list,
-                     'Backward': backward_time_list}
-
-        pickle.dump(time_dict, open(os.path.join(self.config.save_dir, 'time.p'), 'wb'))
         pickle.dump(results, open(os.path.join(self.config.save_dir, 'train_stats_phase1.p'), 'wb'))
         self.logger.info("Best Validation Loss = {:.6}".format(best_val_loss))
 
@@ -435,12 +392,9 @@ class ResnetRunner(object):
         else:
             raise ValueError("Non-supported optimizer!")
 
-        early_stop = EarlyStopper([0.0], win_size=10, is_decrease=False)
-
-        lr_scheduler = optim.lr_scheduler.MultiStepLR(
-            optimizer,
-            milestones=self.train_conf.lr_decay_steps,
-            gamma=self.train_conf.lr_decay)
+        lr_scheduler = CosineAnnealingWarmUpRestarts(
+                optimizer, T_0=50, T_mult=1, eta_max=0.1,  T_up=10, gamma=0.5
+            )
 
         # reset gradient
         optimizer.zero_grad()
@@ -477,7 +431,7 @@ class ResnetRunner(object):
             val_acc = correct / total
             results['val_loss'] += [val_loss]
             results['val_acc'] += [correct / total]
-            self.logger.info("Avg. Validation Loss = {:.6} +- {}".format(val_loss, 0))
+            self.logger.info("Current Best Validation Loss = {:.6}".format(best_val_loss))
 
             # save best model
             if val_loss < best_val_loss:
@@ -522,12 +476,6 @@ class ResnetRunner(object):
                 results['train_loss'] += [train_loss]
                 results['train_step'] += [iter_count]
 
-                # display loss
-                if (iter_count + 1) % self.train_conf.display_iter == 0:
-                    self.logger.info(
-                        "Train Loss @ epoch {:04d} iteration {:08d} = {}".format(epoch + 1, iter_count + 1, train_loss))
-
-                iter_count += 1
             lr_scheduler.step()
 
         results['best_val_loss'] += [best_val_loss]
