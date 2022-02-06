@@ -1,6 +1,6 @@
 ---
 exp_name: 3 # ---> 1,2,3,4,5...
-exp_dir: ../Resnet20_Xor_V3 # ---> 0421_conv_cifar_expMode
+exp_dir: ../exp/Resnet20_Xor/0207 # ---> 0421_conv_cifar_expMode
 
 runner: XorNeuronRunner
 use_gpu: true
