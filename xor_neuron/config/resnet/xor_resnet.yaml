@@ -9,7 +9,6 @@ seed: 1101 # 1101 ~ 1124
 
 # ---- EXP Mode ---- #
 without_pretrain: False # ---> True: xavier_inner_net
-to_save_cell: False  # ---> save epoch by epcoh
 
 dataset:
   name: cifar10  # cifar100
@@ -44,7 +43,7 @@ pretrain:
   best_model: [ /model_snapshot_best_pretrained1.pth]
 
 train:
-  optimizer: SGD
+  optimizer: Adam
   lr_decay: 0.1
   lr_decay_steps: [10000]
   max_epoch: 3

@@ -27,19 +27,19 @@ class LambdaLayer(nn.Module):
 class BasicBlock_InnerNet(nn.Module):
     expansion = 1
 
-    def __init__(self, inner_net, in_planes, planes, stride=1):
+    def __init__(self, inner_net, in_planes, planes, arg_in_dim, stride=1):
         super(BasicBlock_InnerNet, self).__init__()
         self.inner_net = inner_net
 
         self.conv1 = nn.Conv2d(
-            in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
+            in_planes, planes*arg_in_dim, kernel_size=3, stride=stride, padding=1, bias=False
         )
-        self.bn1 = nn.BatchNorm2d(planes)
+        self.bn1 = nn.BatchNorm2d(planes*arg_in_dim)
 
         self.conv2 = nn.Conv2d(
-            planes, planes, kernel_size=3, stride=1, padding=1, bias=False
+            planes, planes*arg_in_dim, kernel_size=3, stride=1, padding=1, bias=False
         )
-        self.bn2 = nn.BatchNorm2d(planes)
+        self.bn2 = nn.BatchNorm2d(planes*arg_in_dim)
 
         self.shortcut = nn.Sequential()
         if stride != 1 or in_planes != planes:
@@ -64,8 +64,10 @@ class BasicBlock_InnerNet(nn.Module):
         return out
 
     def forward(self, x):
-        out = self._inner_net_forward(self.bn1(self.conv1(x)))
-        out = self._inner_net_forward(self.bn2(self.conv2(out)))
+        out = self.bn1(self.conv1(x))
+        out = self._inner_net_forward(out)
+        out = self.bn2(self.conv2(out))
+        out = self._inner_net_forward(out)
         out += self.shortcut(x)
         return out
 
@@ -87,8 +89,8 @@ class ResNet_Xor(nn.Module):
             ('relu2', nn.ReLU()),
             ('fc3', nn.Linear(self.in_hidden_dim, 1))]))
 
-        self.conv1 = nn.Conv2d(3, self.in_planes * 2, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(self.in_planes * 2)
+        self.conv1 = nn.Conv2d(3, self.in_planes * self.arg_in_dim, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(self.in_planes * self.arg_in_dim)
 
         self.layer1 = self._make_layer(block, 16, self.num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 32, self.num_blocks[1], stride=2)
@@ -100,7 +102,7 @@ class ResNet_Xor(nn.Module):
         strides = [stride] + [1] * (num_blocks - 1)
         layers = []
         for stride in strides:
-            layers.append(block(self.inner_net, self.in_planes, planes * self.arg_in_dim, stride))
+            layers.append(block(self.inner_net, self.in_planes, planes, self.arg_in_dim, stride))
             self.in_planes = planes * block.expansion
 
         return nn.Sequential(*layers)

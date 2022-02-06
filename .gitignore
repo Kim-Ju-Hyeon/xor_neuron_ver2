@@ -1,0 +1,12 @@
+*.tar
+*.tar.gz
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+docker/
+xor_neuron/xor_neuron_data/
+
+*results_.p
+*results.p
+
+exp/

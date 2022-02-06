@@ -16,7 +16,6 @@ def send_slack_message(message):
 
 
 def convert_seconds_to_kor_time(in_seconds):
-        """초를 입력받아 읽기쉬운 한국 시간으로 변환"""
         t1 = in_seconds
         days = t1.days
         _sec = t1.seconds

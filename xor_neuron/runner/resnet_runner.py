@@ -9,6 +9,7 @@ import torch.utils.data
 import torch.optim as optim
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader, random_split
+import numpy as np
 
 
 from model import *
@@ -240,15 +241,6 @@ class ResnetRunner(object):
             results['val_loss'] += [val_loss]
             results['val_acc'] += [correct / total]
             self.logger.info("Epoch {} Avg. Validation Loss = {:.6}".format(epoch, val_loss, 0))
-
-            if self.config.to_save_cell:
-                if (epoch < 20) or ((epoch + 1) % 25 == 0):
-                    snapshot(
-                        model.module.inner_net if self.use_gpu else model.inner_net,
-                        optimizer,
-                        self.config,
-                        0,
-                        tag=f'{epoch + 1}')
 
             # save best model
             if val_loss < best_val_loss:
