@@ -26,7 +26,7 @@ from utils.logger import get_logger
 from utils.train_helper import data_to_gpu, snapshot, load_model, \
     EarlyStopper, save_outphase, make_mask
 from utils.corpus import Corpus
-from utils.cosine_annealing_warmup import WarmupCosineLR
+from utils.cosine_annealing_warmup import CosineAnnealingWarmUpRestarts
 
 
 from six.moves import urllib
@@ -72,7 +72,7 @@ class XorNeuronRunner(object):
             drop_last=False)
 
         # Train innernet
-        model = InnerNet(self.config)
+        model = InnerNet_V2(self.config)
         if self.use_gpu:
             model = nn.DataParallel(model, device_ids=self.gpus).cuda()
 
@@ -198,22 +198,18 @@ class XorNeuronRunner(object):
 
             total_steps = len(train_loader) * self.train_conf.max_epoch
 
-            lr_scheduler = WarmupCosineLR(
-                optimizer, warmup_epochs=total_steps * 0.3, max_epochs=total_steps
-            )
-
         elif self.train_conf.optimizer == 'Adam':
             optimizer = optim.Adam(
                 params,
                 lr=self.train_conf.lr,
                 weight_decay=self.train_conf.wd)
-
-            lr_scheduler = optim.lr_scheduler.MultiStepLR(
-                optimizer,
-                milestones=self.train_conf.lr_decay_steps,
-                gamma=self.train_conf.lr_decay)
         else:
             raise ValueError("Non-supported optimizer!")
+
+        lr_scheduler = optim.lr_scheduler.MultiStepLR(
+            optimizer,
+            milestones=self.train_conf.lr_decay_steps,
+            gamma=self.train_conf.lr_decay)
 
 
         # reset gradient
@@ -230,9 +226,6 @@ class XorNeuronRunner(object):
         iter_count = 0
         results = defaultdict(list)
         best_val_loss = np.inf
-
-        forward_time_list = []
-        backward_time_list = []
 
         for epoch in range(self.train_conf.max_epoch):
             # # ===================== validation ============================ #
@@ -284,17 +277,11 @@ class XorNeuronRunner(object):
                 # 1. forward pass
                 # 2. compute loss
 
-                forward_start = time.time()
                 _, loss = model(imgs, labels)
-                forward_time = time.time() - forward_start
 
                 # 3. backward pass (accumulates gradients).
-                backward_start = time.time()
                 loss.backward()
-                backward_time = time.time() - backward_start
 
-                forward_time_list.append(forward_time)
-                backward_time_list.append(backward_time)
 
                 # 4. performs a single update step.
                 optimizer.step()
@@ -303,17 +290,9 @@ class XorNeuronRunner(object):
                 results['train_loss'] += [train_loss]
                 results['train_step'] += [iter_count]
 
-                # display loss
-                # if (iter_count + 1) % self.train_conf.display_iter == 0:
-                #     self.logger.info(
-                #         "Train Loss @ epoch {} iteration {} = {}".format(epoch + 1, iter_count + 1, train_loss))
-
                 iter_count += 1
 
             lr_scheduler.step()
-
-        forward_time_list = np.array(forward_time_list)
-        backward_time_list = np.array(backward_time_list)
 
         results['best_val_loss'] += [best_val_loss]
         results['best_val_acc'] += [best_val_acc]

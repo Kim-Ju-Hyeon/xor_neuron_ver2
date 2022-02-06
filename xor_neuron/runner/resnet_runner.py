@@ -13,7 +13,7 @@ import numpy as np
 
 
 from model import *
-
+from dataset.innernet_data import InnerNetData, InnerNetData_1D, InnerNetData_3D
 from utils.logger import get_logger
 from utils.train_helper import snapshot, load_model
 
@@ -196,9 +196,14 @@ class ResnetRunner(object):
         else:
             raise ValueError("Non-supported optimizer!")
 
-        lr_scheduler = CosineAnnealingWarmUpRestarts(
-                optimizer, T_0=50, T_mult=1, eta_max=0.1,  T_up=10, gamma=0.5
-            )
+        # lr_scheduler = CosineAnnealingWarmUpRestarts(
+        #         optimizer, T_0=50, T_mult=1, eta_max=0.1,  T_up=10, gamma=0.5
+        #     )
+
+        lr_scheduler = optim.lr_scheduler.MultiStepLR(
+            optimizer,
+            milestones=self.train_conf.lr_decay_steps,
+            gamma=self.train_conf.lr_decay)
 
         # reset gradient
         optimizer.zero_grad()
@@ -384,9 +389,14 @@ class ResnetRunner(object):
         else:
             raise ValueError("Non-supported optimizer!")
 
-        lr_scheduler = CosineAnnealingWarmUpRestarts(
-                optimizer, T_0=50, T_mult=1, eta_max=0.1,  T_up=10, gamma=0.5
-            )
+        # lr_scheduler = CosineAnnealingWarmUpRestarts(
+        #         optimizer, T_0=50, T_mult=1, eta_max=0.1,  T_up=10, gamma=0.5
+        #     )
+
+        lr_scheduler = optim.lr_scheduler.MultiStepLR(
+            optimizer,
+            milestones=self.train_conf.lr_decay_steps,
+            gamma=self.train_conf.lr_decay)
 
         # reset gradient
         optimizer.zero_grad()
