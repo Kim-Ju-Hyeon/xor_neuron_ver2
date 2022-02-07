@@ -17,7 +17,7 @@ pretrain: None
 dataset:
   name: cifar10
   loader_name: InnerNetData
-  data_path: ./xor_neuron_data/data
+  data_path: /workspace/xor_neuron_ver2/xor_neuron/xor_neuron_data/data
   split: train
   augmentation: False
 

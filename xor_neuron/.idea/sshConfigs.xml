@@ -3,6 +3,7 @@
   <component name="SshConfigs">
     <configs>
       <sshConfig authType="PASSWORD" host="192.168.1.10" id="5382e4c7-45c9-467e-a5d6-758ab5c61be1" port="22" nameFormat="DESCRIPTIVE" username="nvidia" />
+      <sshConfig authType="PASSWORD" host="192.168.1.11" id="861485d8-bad7-4ece-9567-2b8001010e63" port="22" nameFormat="DESCRIPTIVE" username="rtx30" />
     </configs>
   </component>
 </project>

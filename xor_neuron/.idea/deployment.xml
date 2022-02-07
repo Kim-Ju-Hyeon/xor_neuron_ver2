@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="DGX" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" serverName="DGX" preserveTimestamps="false" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="DGX">
         <serverdata>
           <mappings>
             <mapping deploy="/home/nvidia/xor_neuron/xor_neuron_ver2/xor_neuron" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="RTX30">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/xor_neuron/xor_neuron_ver2/xor_neuron" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

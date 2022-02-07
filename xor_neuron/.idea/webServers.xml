@@ -9,6 +9,13 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
+      <webServer id="9c606c7b-262a-4e07-bd74-ba618180bb09" name="RTX30">
+        <fileTransfer rootFolder="/home/rtx30" accessType="SFTP" host="192.168.1.11" port="22" sshConfigId="861485d8-bad7-4ece-9567-2b8001010e63" sshConfig="rtx30@192.168.1.11:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>

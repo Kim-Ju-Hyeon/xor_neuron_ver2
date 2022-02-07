@@ -13,7 +13,7 @@ without_pretrain: False # ---> True: xavier_inner_net
 dataset:
   name: cifar10  # cifar100
   loader_name: InnerNetData   # exp 1D ---> InnerNetData_1D
-  data_path: ./xor_neuron_data/data
+  data_path: /workspace/xor_neuron_ver2/xor_neuron/xor_neuron_data/data
   split: train
   augmentation: True
 

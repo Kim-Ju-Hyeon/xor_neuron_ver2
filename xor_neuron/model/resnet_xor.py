@@ -30,6 +30,7 @@ class BasicBlock_InnerNet(nn.Module):
     def __init__(self, inner_net, in_planes, planes, arg_in_dim, stride=1):
         super(BasicBlock_InnerNet, self).__init__()
         self.inner_net = inner_net
+        self.arg_in_dim = arg_in_dim
 
         self.conv1 = nn.Conv2d(
             in_planes, planes*arg_in_dim, kernel_size=3, stride=stride, padding=1, bias=False
@@ -56,7 +57,7 @@ class BasicBlock_InnerNet(nn.Module):
         channel = x.shape[1]
         input_size = x.shape[-1]
 
-        input = x.reshape(batch_size, channel // 2, -1, 2)
+        input = x.reshape(batch_size, channel // self.arg_in_dim, -1, self.arg_in_dim)
 
         out = self.inner_net(input)
 
