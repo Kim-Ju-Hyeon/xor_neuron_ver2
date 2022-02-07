@@ -97,6 +97,7 @@ class ResNet_Xor(nn.Module):
                 ('relu2', nn.ReLU()),
                 ('fc3', nn.Linear(self.in_hidden_dim, 1))]))
 
+
         self.conv1 = nn.Conv2d(3, self.in_planes * self.arg_in_dim, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(self.in_planes * self.arg_in_dim)
 
