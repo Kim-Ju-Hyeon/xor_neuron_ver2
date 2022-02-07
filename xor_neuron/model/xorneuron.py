@@ -45,15 +45,6 @@ class InnerNet_V2(nn.Module):
                     m.bias.data.zero_()
 
     def forward(self, x, targets):
-        # batch_size = x.shape[0]
-        # channel = x.shape[1]
-        # input_size = x.shape[-1]
-        #
-        # inputs = x.reshape(batch_size, channel // self.arg_in_dim, -1, self.arg_in_dim)
-        #
-        # out = self.inner_net(inputs)
-        #
-        # out = out.reshape(batch_size, -1, input_size, input_size)
         out = self.inner_net(x)
         loss = self.loss_func(out, targets)
 
@@ -67,10 +58,29 @@ class QuadraticInnerNet(nn.Module):
         self.b = nn.Linear(2, 1, bias=True)
 
     def forward(self, x):
-        x_123 = self.A(x)
-        x_45 = self.b(x)
+        if len(x.shape) == 2:
+            inputs = x.reshape(x.shape[0], -1, 2)
 
-        out = einsum('ij, ij -> i', x_123, x_123).unsqueeze(dim=-1)
-        out = einsum('ij, ij -> i', out, x_45)
+            x_123 = self.A(inputs)
+            x_45 = self.b(inputs)
 
-        return out.unsqueeze(dim=-1)
+            out = einsum('ijk, ijk -> ij', x_123, inputs).unsqueeze(dim=-1)
+            out += x_45
+            out = out.squeeze()
+
+        elif len(x.shape) == 4:
+            # inputs = x.reshape(x.shape[0], x.shape[1] // 2, -1, 2)
+            inputs = x
+
+            x_123 = self.A(inputs)
+            x_45 = self.b(inputs)
+
+            out = einsum('ijkh, ijkh -> ijk', x_123, inputs).unsqueeze(dim=-1)
+            out += x_45
+            out = out.squeeze()
+            # out = out.reshape(x.shape[0], -1, x.shape[-1], x.shape[-1])
+
+        else:
+            raise ValueError('Invalid input shape')
+
+        return out

@@ -173,7 +173,11 @@ class ResnetRunner(object):
 
         # create models
         model = ResNet20_Xor(self.config)
-        load_model(model.inner_net, self.config.model_save + self.pretrain_conf.best_model[0])
+
+        if self.model_conf.inner_net == 'quad':
+            pass
+        else:
+            load_model(model.inner_net, self.config.model_save + self.pretrain_conf.best_model[0])
 
         if self.use_gpu:
             model = nn.DataParallel(model, device_ids=self.gpus).cuda()

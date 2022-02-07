@@ -1,14 +1,15 @@
 ---
-exp_name: test # ---> 1,2,3,4,5...
-exp_dir: ../test/Xor_Resnet20 # ---> 0421_conv_cifar_expMode
+exp_name: 2 # ---> 1,2,3,4,5...
+exp_dir: /workspace/xor_neuron_ver2/exp/Resnet20_Quad/0207 # ---> 0421_conv_cifar_expMode
 
 runner: XorNeuronRunner
 use_gpu: true
 gpus: [0]
-seed: 1101 # 1101 ~ 1124
+seed: 5511 # 1101 ~ 1124
 
 # ---- EXP Mode ---- #
 without_pretrain: False # ---> True: xavier_inner_net
+to_save_cell: False  # ---> save epoch by epcoh
 
 dataset:
   name: cifar10  # cifar100
@@ -20,11 +21,15 @@ dataset:
 model:
   name: Xor_ResNet
   num_cell_types: 1
-  inner_net: conv # quad
+  inner_net: quad
   input_channel: 3 # 1(mnist)/3(cifar10)
   arg_in_dim: 2
-  in_channel: 16
-  num_blocks: [1,1,1]
+  in_channel: 64
+#  out_channel: [60, 120, 120, 120] #[66, 132, 132, 126]
+#  kernel_size: [3, 3, 3, 1]
+#  zero_pad: [0, 0, 0, 0]
+#  stride: [1, 1, 1, 1]
+  num_blocks: [3,3,3]
 
   dropout: 0.5
   num_classes: 10
@@ -33,8 +38,8 @@ model:
 pretrain:
   optimizer: Adam
   num_workers: 0
-  max_epoch: 20  # ---> 1D-arg: 50000   2D-arg: 500
-  batch_size: 100
+  max_epoch: 500  # ---> 1D-arg: 50000   2D-arg: 500
+  batch_size: 512
   snapshot_epoch: 1000
   lr: 1.0e-3
   wd: 0.0e-4
@@ -44,12 +49,16 @@ pretrain:
 
 train:
   optimizer: Adam
-  lr_decay: 0.1
+  lr_decay: 0.0001
   lr_decay_steps: [10000]
-  max_epoch: 3
-  batch_size: 128
+  num_workers: 0
+  max_epoch: 200
+  batch_size: 64
+  display_iter: 5000
+  snapshot_epoch: 1000
+  valid_epoch: 1
   lr: 1.0e-3
-  wd: 0.0e-4
+  wd: 1.0e-4
   momentum: 0.9
   shuffle: true
   is_resume: false

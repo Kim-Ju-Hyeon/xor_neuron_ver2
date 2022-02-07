@@ -32,9 +32,13 @@ def main(exp_path, sample_id=1):
     try:
         runner = ResnetRunner(config)
 
-        runner.pretrain(1)
-        runner.train_phase1()
-        runner.train_phase2()
+        if config.model.inner_net == 'quad':
+            runner.train_phase1()
+
+        else:
+            runner.pretrain(1)
+            runner.train_phase1()
+            runner.train_phase2()
 
     except:
         logger.error(traceback.format_exc())

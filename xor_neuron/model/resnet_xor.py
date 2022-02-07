@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 
+from model.xorneuron import QuadraticInnerNet
+
 from collections import OrderedDict
 
 __all__ = ['ResNet20_Xor', 'BasicBlock_InnerNet']
@@ -83,12 +85,17 @@ class ResNet_Xor(nn.Module):
 
         self.loss_func = nn.CrossEntropyLoss()
 
-        self.inner_net = nn.Sequential(OrderedDict([
-            ('fc1', nn.Linear(self.arg_in_dim, self.in_hidden_dim)),
-            ('relu1', nn.ReLU()),
-            ('fc2', nn.Linear(self.in_hidden_dim, self.in_hidden_dim)),
-            ('relu2', nn.ReLU()),
-            ('fc3', nn.Linear(self.in_hidden_dim, 1))]))
+        if config.model.inner_net == 'quad':
+            self.inner_net = QuadraticInnerNet()
+            self.arg_in_dim = 2
+
+        else:
+            self.inner_net = nn.Sequential(OrderedDict([
+                ('fc1', nn.Linear(self.arg_in_dim, self.in_hidden_dim)),
+                ('relu1', nn.ReLU()),
+                ('fc2', nn.Linear(self.in_hidden_dim, self.in_hidden_dim)),
+                ('relu2', nn.ReLU()),
+                ('fc3', nn.Linear(self.in_hidden_dim, 1))]))
 
         self.conv1 = nn.Conv2d(3, self.in_planes * self.arg_in_dim, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(self.in_planes * self.arg_in_dim)
