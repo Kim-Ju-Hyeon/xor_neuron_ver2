@@ -38,7 +38,7 @@ model:
 pretrain:
   optimizer: Adam
   num_workers: 0
-  max_epoch: 500  # ---> 1D-arg: 50000   2D-arg: 500
+  max_epoch: 50000  # ---> 1D-arg: 50000   2D-arg: 500
   batch_size: 512
   snapshot_epoch: 1000
   lr: 1.0e-3
