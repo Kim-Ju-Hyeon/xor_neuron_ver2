@@ -2,8 +2,8 @@ import requests
 import datetime
 
 def send_slack_message(message):
-        myToken = "xoxb-1878415793027-2563831293013-WFZU6aANrL6MMaAiF6LFE82a"
-        channel_id = "C02GNPARJBU"
+        myToken = "Your bot Token"
+        channel_id = "Your Channel ID"
 
         data = {'content-Type': 'application/x-www-form-urlencoded',
                 'token': myToken,
