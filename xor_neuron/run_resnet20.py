@@ -19,6 +19,7 @@ torch.set_printoptions(profile='full')
 @click.option('--exp_path', type=str, default="./config/resnet/xor_resnet.yaml")
 def main(exp_path, sample_id=1):
     config = get_config(exp_path, sample_id="{:03d}".format(sample_id))
+    config.seed = np.random.randint(10000)
 
     np.random.seed(config.seed)
     torch.manual_seed(config.seed)
