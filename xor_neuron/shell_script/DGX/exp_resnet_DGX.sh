@@ -22,7 +22,7 @@ do
 done
 
 export CUDA_VISIBLE_DEVICES=3
-for i in 1 2 3 4
+for i in 5 6 7 8
 do
     python ../../run_resnet20.py --exp_path ../../config/resnet/0210_resnet_xor_v2_DGX/${i}.yaml &
     sleep 3
