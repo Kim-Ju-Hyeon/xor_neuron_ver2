@@ -119,10 +119,12 @@ class ResnetRunner(object):
     def train_phase1(self):
         if self.dataset_conf.name == 'mnist':
             transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize([0.5], [0.5])])
+
             train_dataset = datasets.MNIST(root=self.dataset_conf.data_path,
                                            train=True,
                                            transform=transform,
                                            download=True)
+
             train_dataset, val_dataset = random_split(train_dataset, [50000, 10000])
 
         elif self.dataset_conf.name == 'cifar10':
