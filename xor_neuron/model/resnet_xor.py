@@ -44,6 +44,13 @@ class BasicBlock_InnerNet(nn.Module):
         )
         self.bn2 = nn.BatchNorm2d(planes*arg_in_dim)
 
+        self.conv3 = nn.Conv2d(
+            planes, planes * arg_in_dim, kernel_size=3, stride=1, padding=1, bias=False
+        )
+        self.bn3 = nn.BatchNorm2d(planes * arg_in_dim)
+
+
+
         self.shortcut = nn.Sequential()
         if stride != 1 or in_planes != planes:
             self.shortcut = LambdaLayer(
@@ -72,6 +79,8 @@ class BasicBlock_InnerNet(nn.Module):
         out = self.bn2(self.conv2(out))
         out = self._inner_net_forward(out)
         out += self.shortcut(x)
+        out = self.bn3(self.conv3(out))
+        out = self._inner_net_forward(out)
         return out
 
 
