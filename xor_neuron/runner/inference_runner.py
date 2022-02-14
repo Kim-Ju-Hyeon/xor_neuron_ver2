@@ -282,7 +282,6 @@ class XorNeuronRunner(object):
                 # 3. backward pass (accumulates gradients).
                 loss.backward()
 
-
                 # 4. performs a single update step.
                 optimizer.step()
 

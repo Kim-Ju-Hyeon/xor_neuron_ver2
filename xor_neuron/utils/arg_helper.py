@@ -6,7 +6,7 @@ from easydict import EasyDict as edict
 import numpy as np
 
 
-def get_config(config_file, sample_id, exp_dir=None):
+def get_config(config_file, exp_dir=None):
       """ Construct and snapshot hyper parameters """
       config = edict(yaml.load(open(config_file, 'r'), Loader=yaml.FullLoader))
 
