@@ -10,7 +10,7 @@ do
 #   sleep 3
 done
 
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 for i in 2
 do
   python ../../run_control_multi_act_fnc.py --exp_path ../../config/control_model/control_mlp_cifar.yaml --act_fnc_list 'ReLU' --exp_num 4 &
