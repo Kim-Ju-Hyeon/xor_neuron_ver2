@@ -1,6 +1,6 @@
 ---
 exp_name: 1  # ---> 1,2,3,4,5...
-exp_dir: ../Control_activation_fnc_EXP/MLP/CIFAR10  # ---> 0421_mlp_cifar10_expMode
+exp_dir: /workspace/xor_neuron_ver2/exp/Control_activation_fnc_EXP/MLP/CIFAR10  # ---> 0421_mlp_cifar10_expMode
 
 runner: XorNeuronRunner
 use_gpu: True

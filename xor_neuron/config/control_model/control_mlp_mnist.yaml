@@ -1,6 +1,6 @@
 ---
 exp_name: 1  # ---> 1,2,3,4,5...
-exp_dir: /workspace/xor_neuron_ver2/exp/Control_activation_fnc_EXP/MLP_MNIST  # ---> 0421_mlp_mnist_expMode
+exp_dir: /workspace/xor_neuron_ver2/exp/Control_activation_fnc_EXP/MLP/MNIST  # ---> 0421_mlp_mnist_expMode
 
 runner: XorNeuronRunner
 use_gpu: True
@@ -19,6 +19,7 @@ dataset:
   loader_name: InnerNetData
   data_path: /workspace/xor_neuron_ver2/xor_neuron/xor_neuron_data/data
   split: train
+  augmentation: False
 
 model:
   name: Control_MLP
