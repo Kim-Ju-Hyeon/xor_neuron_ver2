@@ -45,7 +45,7 @@ class BasicBlock_InnerNet(nn.Module):
         self.bn2 = nn.BatchNorm2d(planes*arg_in_dim)
 
         self.conv3 = nn.Conv2d(
-            planes, planes * arg_in_dim, kernel_size=3, stride=1, padding=1, bias=False
+            planes, planes * arg_in_dim, kernel_size=1, stride=1, bias=False
         )
         self.bn3 = nn.BatchNorm2d(planes * arg_in_dim)
 
