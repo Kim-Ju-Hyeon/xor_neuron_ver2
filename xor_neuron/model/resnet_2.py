@@ -197,6 +197,7 @@ class ResNet_Xor_2(nn.Module):
         super(ResNet_Xor_2, self).__init__()
         self.config = config
         self.arg_in_dim = config.model.arg_in_dim
+        self.in_hidden_dim = config.model.in_channel
 
         self.loss_func = nn.CrossEntropyLoss()
 
