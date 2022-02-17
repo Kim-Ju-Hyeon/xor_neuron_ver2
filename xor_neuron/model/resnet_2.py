@@ -2,8 +2,12 @@ import torch
 import torch.nn as nn
 import os
 
+from model.xorneuron import QuadraticInnerNet
+
+from collections import OrderedDict
+
 __all__ = [
-    "ResNet",
+    "ResNet_Xor_2",
     "resnet18",
     "resnet34",
     "resnet50",
@@ -34,6 +38,7 @@ class BasicBlock(nn.Module):
 
     def __init__(
         self,
+        inner_net,
         inplanes,
         planes,
         stride=1,
@@ -42,29 +47,49 @@ class BasicBlock(nn.Module):
         base_width=64,
         dilation=1,
         norm_layer=None,
+        arg_in_dim=2
     ):
         super(BasicBlock, self).__init__()
+
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
             raise ValueError("BasicBlock only supports groups=1 and base_width=64")
         if dilation > 1:
             raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = norm_layer(planes)
-        self.relu = nn.ReLU(inplace=True)
+        self.arg_in_dim = arg_in_dim
+        self.inner_net = inner_net
+        self.inner_net_conv = conv1x1(planes, planes*self.arg_in_dim)
+        self.inner_net_bn = norm_layer(planes*self.arg_in_dim)
+
+        self.conv1 = conv3x3(inplanes, planes*self.arg_in_dim, stride)
+        self.bn1 = norm_layer(planes*self.arg_in_dim)
+
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = norm_layer(planes)
+
         self.downsample = downsample
         self.stride = stride
+
+    def _inner_net_forward(self, x):
+        batch_size = x.shape[0]
+        channel = x.shape[1]
+        input_size = x.shape[-1]
+
+        input = x.reshape(batch_size, channel // self.arg_in_dim, -1, self.arg_in_dim)
+        out = self.inner_net(input)
+
+        out = out.reshape(batch_size, -1, input_size, input_size)
+        return out
 
     def forward(self, x):
         identity = x
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.relu(out)
+        out = self._inner_net_forward(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
@@ -73,7 +98,9 @@ class BasicBlock(nn.Module):
             identity = self.downsample(x)
 
         out += identity
-        out = self.relu(out)
+
+        out = self.inner_net_bn(self.inner_net_conv(out))
+        out = self._inner_net_forward(out)
 
         return out
 
@@ -83,6 +110,7 @@ class Bottleneck(nn.Module):
 
     def __init__(
         self,
+        inner_net,
         inplanes,
         planes,
         stride=1,
@@ -91,32 +119,53 @@ class Bottleneck(nn.Module):
         base_width=64,
         dilation=1,
         norm_layer=None,
+        arg_in_dim=2
     ):
         super(Bottleneck, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         width = int(planes * (base_width / 64.0)) * groups
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = conv1x1(inplanes, width)
-        self.bn1 = norm_layer(width)
-        self.conv2 = conv3x3(width, width, stride, groups, dilation)
-        self.bn2 = norm_layer(width)
+        self.arg_in_dim = arg_in_dim
+        self.inner_net = inner_net
+        self.inner_net_conv = conv1x1(planes*self.expansion, planes*self.expansion*self.arg_in_dim)
+        self.inner_net_bn = norm_layer(planes*self.expansion*self.arg_in_dim)
+
+        self.conv1 = conv1x1(inplanes, width*self.arg_in_dim)
+        self.bn1 = norm_layer(width*self.arg_in_dim)
+
+        self.conv2 = conv3x3(width, width*self.arg_in_dim, stride, groups, dilation)
+        self.bn2 = norm_layer(width*self.arg_in_dim)
+
         self.conv3 = conv1x1(width, planes * self.expansion)
         self.bn3 = norm_layer(planes * self.expansion)
+
         self.relu = nn.ReLU(inplace=True)
+
         self.downsample = downsample
         self.stride = stride
+
+    def _inner_net_forward(self, x):
+        batch_size = x.shape[0]
+        channel = x.shape[1]
+        input_size = x.shape[-1]
+
+        input = x.reshape(batch_size, channel // self.arg_in_dim, -1, self.arg_in_dim)
+        out = self.inner_net(input)
+
+        out = out.reshape(batch_size, -1, input_size, input_size)
+        return out
 
     def forward(self, x):
         identity = x
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.relu(out)
+        out = self._inner_net_forward(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out = self.relu(out)
+        out = self._inner_net_forward(out)
 
         out = self.conv3(out)
         out = self.bn3(out)
@@ -125,16 +174,19 @@ class Bottleneck(nn.Module):
             identity = self.downsample(x)
 
         out += identity
-        out = self.relu(out)
+
+        out = self.inner_net_bn(self.inner_net_conv(out))
+        out = self._inner_net_forward(out)
 
         return out
 
 
-class ResNet(nn.Module):
+class ResNet_Xor_2(nn.Module):
     def __init__(
         self,
         block,
         layers,
+        config,
         num_classes=10,
         zero_init_residual=False,
         groups=1,
@@ -142,13 +194,31 @@ class ResNet(nn.Module):
         replace_stride_with_dilation=None,
         norm_layer=None,
     ):
-        super(ResNet, self).__init__()
+        super(ResNet_Xor_2, self).__init__()
+        self.config = config
+        self.arg_in_dim = config.model.arg_in_dim
+
+        self.loss_func = nn.CrossEntropyLoss()
+
+        if config.model.inner_net == 'quad':
+            self.inner_net = QuadraticInnerNet()
+            self.arg_in_dim = 2
+
+        else:
+            self.inner_net = nn.Sequential(OrderedDict([
+                ('fc1', nn.Linear(self.arg_in_dim, self.in_hidden_dim)),
+                ('relu1', nn.ReLU()),
+                ('fc2', nn.Linear(self.in_hidden_dim, self.in_hidden_dim)),
+                ('relu2', nn.ReLU()),
+                ('fc3', nn.Linear(self.in_hidden_dim, 1))]))
+
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         self._norm_layer = norm_layer
 
         self.inplanes = 64
         self.dilation = 1
+
         if replace_stride_with_dilation is None:
             # each element in the tuple indicates if we should replace
             # the 2x2 stride with a dilated convolution instead
@@ -163,13 +233,16 @@ class ResNet(nn.Module):
 
         # CIFAR10: kernel_size 7 -> 3, stride 2 -> 1, padding 3->1
         self.conv1 = nn.Conv2d(
-            3, self.inplanes, kernel_size=3, stride=1, padding=1, bias=False
+            3, self.inplanes*self.arg_in_dim, kernel_size=3, stride=1, padding=1, bias=False
         )
         # END
 
-        self.bn1 = norm_layer(self.inplanes)
+        self.bn1 = norm_layer(self.inplanes*self.arg_in_dim)
+
         self.relu = nn.ReLU(inplace=True)
+
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(
             block, 128, layers[1], stride=2, dilate=replace_stride_with_dilation[0]
@@ -241,10 +314,22 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def _inner_net_forward(self, x):
+        batch_size = x.shape[0]
+        channel = x.shape[1]
+        input_size = x.shape[-1]
+
+        input = x.reshape(batch_size, channel // self.arg_in_dim, -1, self.arg_in_dim)
+
+        out = self.inner_net(input)
+
+        out = out.reshape(batch_size, -1, input_size, input_size)
+        return out
+
+    def forward(self, x, labels):
         x = self.conv1(x)
         x = self.bn1(x)
-        x = self.relu(x)
+        x = self._inner_net_forward(x)
         x = self.maxpool(x)
 
         x = self.layer1(x)
@@ -256,17 +341,18 @@ class ResNet(nn.Module):
         x = x.reshape(x.size(0), -1)
         x = self.fc(x)
 
-        return x
+        loss = self.loss_func(x, labels)
+
+        return x, loss, None
 
 
-
-def resnet18():
-    return ResNet(BasicBlock, [2, 2, 2, 2])
-
-
-def resnet34():
-    return ResNet(BasicBlock, [3, 4, 6, 3])
+def resnet18(config):
+    return ResNet_Xor_2(BasicBlock, [2, 2, 2, 2], config)
 
 
-def resnet50():
-    return ResNet(Bottleneck, [3, 4, 6, 3])
+def resnet34(config):
+    return ResNet_Xor_2(BasicBlock, [3, 4, 6, 3], config)
+
+
+def resnet50(config):
+    return ResNet_Xor_2(Bottleneck, [3, 4, 6, 3], config)

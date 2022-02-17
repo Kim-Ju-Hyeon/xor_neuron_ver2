@@ -148,7 +148,6 @@ class ResnetRunner(object):
                     [transforms.ToTensor(), transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2471, 0.2435, 0.2616])]),
                                            download=True)
 
-
         elif self.dataset_conf.name == 'cifar100':
             transform = transforms.Compose(
                 [transforms.ToTensor(), transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])])
@@ -174,7 +173,7 @@ class ResnetRunner(object):
                                 )
 
         # create models
-        model = ResNet20_Xor(self.config)
+        model = eval(self.model_conf.name)(self.config)
 
         if self.model_conf.inner_net == 'quad':
             pass
@@ -201,15 +200,6 @@ class ResnetRunner(object):
                 weight_decay=self.train_conf.wd)
         else:
             raise ValueError("Non-supported optimizer!")
-
-        # lr_scheduler = CosineAnnealingWarmUpRestarts(
-        #         optimizer, T_0=50, T_mult=1, eta_max=0.1,  T_up=10, gamma=0.5
-        #     )
-
-        lr_scheduler = optim.lr_scheduler.MultiStepLR(
-            optimizer,
-            milestones=self.train_conf.lr_decay_steps,
-            gamma=self.train_conf.lr_decay)
 
         # reset gradient
         optimizer.zero_grad()
@@ -302,7 +292,6 @@ class ResnetRunner(object):
                 results['train_loss'] += [train_loss]
                 results['train_step'] += [iter_count]
 
-            lr_scheduler.step()
 
         results['best_val_loss'] += [best_val_loss]
         results['best_val_acc'] += [best_val_acc]
@@ -361,7 +350,7 @@ class ResnetRunner(object):
                                 shuffle=False)
 
         # create models
-        model = ResNet20_Xor(self.config)
+        model = eval(self.model_conf.name)(self.config)
 
         # load inner-net trained on phase 1
         load_model(model.inner_net, self.config.model_save + self.train_conf.best_model)
@@ -395,14 +384,6 @@ class ResnetRunner(object):
         else:
             raise ValueError("Non-supported optimizer!")
 
-        # lr_scheduler = CosineAnnealingWarmUpRestarts(
-        #         optimizer, T_0=50, T_mult=1, eta_max=0.1,  T_up=10, gamma=0.5
-        #     )
-
-        lr_scheduler = optim.lr_scheduler.MultiStepLR(
-            optimizer,
-            milestones=self.train_conf.lr_decay_steps,
-            gamma=self.train_conf.lr_decay)
 
         # reset gradient
         optimizer.zero_grad()
@@ -484,8 +465,6 @@ class ResnetRunner(object):
                 results['train_loss'] += [train_loss]
                 results['train_step'] += [iter_count]
 
-            lr_scheduler.step()
-
         results['best_val_loss'] += [best_val_loss]
         results['best_val_acc'] += [best_val_acc]
         pickle.dump(results, open(os.path.join(self.config.save_dir, 'train_stats_phase2.p'), 'wb'))
@@ -534,7 +513,7 @@ class ResnetRunner(object):
                                  shuffle=False)
 
         # create models
-        model = ResNet20_Xor(self.config)
+        model = eval(self.model_conf.name)(self.config)
         load_model(model, self.config.model_save + self.test_conf.test_model)
 
         if self.use_gpu:

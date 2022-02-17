@@ -7,7 +7,7 @@ from model.xorneuron import QuadraticInnerNet
 
 from collections import OrderedDict
 
-__all__ = ['ResNet20_Xor', 'BasicBlock_InnerNet']
+__all__ = ['ResNet20_Xor']
 
 
 def _weights_init(m):
