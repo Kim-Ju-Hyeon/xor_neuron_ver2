@@ -5,7 +5,7 @@ import torch.nn.init as init
 
 from torch.autograd import Variable
 
-__all__ = ['ResNet', 'resnet20']
+__all__ = ['ResNet_Orig', 'resnet20']
 
 def _weights_init(m):
     classname = m.__class__.__name__
@@ -73,9 +73,9 @@ class BasicBlock(nn.Module):
         return out
 
 
-class ResNet(nn.Module):
+class ResNet_Orig(nn.Module):
     def __init__(self, block, config, num_classes=10):
-        super(ResNet, self).__init__()
+        super(ResNet_Orig, self).__init__()
         self.config = config
         self.in_planes = 16
         self.num_blocks = config.model.num_blocks
@@ -134,4 +134,4 @@ class ResNet(nn.Module):
 
 
 def resnet20(config):
-    return ResNet(BasicBlock, config)
+    return ResNet_Orig(BasicBlock, config)
