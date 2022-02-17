@@ -54,9 +54,6 @@ class BasicBlock(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 
-        if dilation > 1:
-            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
-
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.arg_in_dim = arg_in_dim
         self.inner_net = inner_net
