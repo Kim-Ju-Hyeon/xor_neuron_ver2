@@ -259,45 +259,14 @@ class ResNet(nn.Module):
         return x
 
 
-def _resnet(arch, block, layers, pretrained, progress, device, **kwargs):
-    model = ResNet(block, layers, **kwargs)
-    if pretrained:
-        script_dir = os.path.dirname(__file__)
-        state_dict = torch.load(
-            script_dir + "/state_dicts/" + arch + ".pt", map_location=device
-        )
-        model.load_state_dict(state_dict)
-    return model
+
+def resnet18():
+    return ResNet(BasicBlock, [2, 2, 2, 2])
 
 
-def resnet18(pretrained=False, progress=True, device="cpu", **kwargs):
-    """Constructs a ResNet-18 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    return _resnet(
-        "resnet18", BasicBlock, [2, 2, 2, 2], pretrained, progress, device, **kwargs
-    )
+def resnet34():
+    return ResNet(BasicBlock, [3, 4, 6, 3])
 
 
-def resnet34(pretrained=False, progress=True, device="cpu", **kwargs):
-    """Constructs a ResNet-34 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    return _resnet(
-        "resnet34", BasicBlock, [3, 4, 6, 3], pretrained, progress, device, **kwargs
-    )
-
-
-def resnet50(pretrained=False, progress=True, device="cpu", **kwargs):
-    """Constructs a ResNet-50 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    return _resnet(
-        "resnet50", Bottleneck, [3, 4, 6, 3], pretrained, progress, device, **kwargs
-    )
+def resnet50():
+    return ResNet(Bottleneck, [3, 4, 6, 3])
