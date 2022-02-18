@@ -5,7 +5,7 @@ exp_dir: /workspace/xor_neuron_ver2/exp/Resnet20_Xor_v4/0218 # ---> 0421_conv_ci
 runner: XorNeuronRunner
 use_gpu: true
 gpus: [0]
-seed: 48 # 1101 ~ 1124
+seed: 438 # 1101 ~ 1124
 
 # ---- EXP Mode ---- #
 without_pretrain: False # ---> True: xavier_inner_net
@@ -47,11 +47,11 @@ train:
   lr_decay_steps: [10000]
   num_workers: 0
   max_epoch: 200
-  batch_size: 32
+  batch_size: 16
   display_iter: 5000
   snapshot_epoch: 1000
   valid_epoch: 1
-  lr: 1.0e-3
+  lr: 1.0e-4
   wd: 1.0e-4
   momentum: 0.9
   shuffle: true
