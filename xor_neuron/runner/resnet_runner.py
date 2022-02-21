@@ -177,6 +177,9 @@ class ResnetRunner(object):
 
         if self.model_conf.inner_net == 'quad':
             pass
+
+        elif self.config.without_pretrain:
+            pass
         else:
             load_model(model.inner_net, self.config.model_save + self.pretrain_conf.best_model[0])
 

@@ -35,6 +35,11 @@ def main(exp_path):
 
         if config.model.inner_net == 'quad':
             runner.train_phase1()
+            runner.train_phase2()
+
+        elif config.without_pretrain:
+            runner.train_phase1()
+            runner.train_phase2()
 
         else:
             runner.pretrain(1)
