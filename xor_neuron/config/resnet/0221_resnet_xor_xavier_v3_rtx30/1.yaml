@@ -1,6 +1,6 @@
 ---
 exp_name: resnet18 # ---> 1,2,3,4,5...
-exp_dir: /workspace/xor_neuron_ver2/exp/Resnet20_Xor_v4/0218 # ---> 0421_conv_cifar_expMode
+exp_dir: /workspace/xor_neuron_ver2/exp/Resnet20_Xor_Xavier/0221 # ---> 0421_conv_cifar_expMode
 
 runner: XorNeuronRunner
 use_gpu: true
