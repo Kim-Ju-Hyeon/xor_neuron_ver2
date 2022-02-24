@@ -36,13 +36,10 @@ def main(exp_path):
         if config.model.inner_net == 'quad':
             runner.train_phase1()
             runner.train_phase2()
-<<<<<<< HEAD
-=======
 
         elif config.without_pretrain:
             runner.train_phase1()
             runner.train_phase2()
->>>>>>> 9b23d66c344f2acf5e66c31c371b85d9b072775a
 
         else:
             runner.pretrain(1)
