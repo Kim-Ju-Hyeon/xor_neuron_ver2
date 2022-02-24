@@ -5,7 +5,7 @@ exp_dir: /workspace/xor_neuron_ver2/exp/Resnet20_Xor_v4/0218 # ---> 0421_conv_ci
 runner: XorNeuronRunner
 use_gpu: true
 gpus: [0]
-seed: 48 # 1101 ~ 1124
+seed: 4448 # 1101 ~ 1124
 
 # ---- EXP Mode ---- #
 without_pretrain: False # ---> True: xavier_inner_net

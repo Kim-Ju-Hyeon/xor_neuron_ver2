@@ -69,7 +69,6 @@ class QuadraticInnerNet(nn.Module):
             out = out.squeeze()
 
         elif len(x.shape) == 4:
-            # inputs = x.reshape(x.shape[0], x.shape[1] // 2, -1, 2)
             inputs = x
 
             x_123 = self.A(inputs)
@@ -78,8 +77,6 @@ class QuadraticInnerNet(nn.Module):
             out = einsum('ijkh, ijkh -> ijk', x_123, inputs).unsqueeze(dim=-1)
             out += x_45
             out = out.squeeze()
-            # out = out.reshape(x.shape[0], -1, x.shape[-1], x.shape[-1])
-
         else:
             raise ValueError('Invalid input shape')
 
