@@ -180,8 +180,13 @@ class ResnetRunner(object):
 
         elif self.config.without_pretrain:
             pass
+
+        elif 'orig' in self.config.model.name:
+            pass
         else:
             load_model(model.inner_net, self.config.model_save + self.pretrain_conf.best_model[0])
+
+
 
         if self.use_gpu:
             model = nn.DataParallel(model, device_ids=self.gpus).cuda()
@@ -286,7 +291,6 @@ class ResnetRunner(object):
                 _, loss, _ = model(imgs, labels)
 
                 # 3. backward pass (accumulates gradients).
-                backward_start = time.time()
                 loss.backward()
                 # 4. performs a single update step.
                 optimizer.step()

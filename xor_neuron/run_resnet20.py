@@ -37,6 +37,9 @@ def main(exp_path):
             runner.train_phase1()
             runner.train_phase2()
 
+        elif 'orig' in config.model.name:
+            runner.train_phase1()
+
         elif config.without_pretrain:
             runner.train_phase1()
             runner.train_phase2()
