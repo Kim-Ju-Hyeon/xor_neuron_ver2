@@ -230,6 +230,7 @@ class ResNet(nn.Module):
             )
         self.groups = groups
         self.base_width = width_per_group
+        self.loss_func = nn.CrossEntropyLoss()
 
         # CIFAR10: kernel_size 7 -> 3, stride 2 -> 1, padding 3->1
         self.conv1 = nn.Conv2d(
@@ -311,7 +312,7 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x, labels):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -326,7 +327,9 @@ class ResNet(nn.Module):
         x = x.reshape(x.size(0), -1)
         x = self.fc(x)
 
-        return x
+        loss = self.loss_func(x, labels)
+
+        return x, loss, None
 
 
 def _resnet(arch, block, layers, pretrained, progress, device):
