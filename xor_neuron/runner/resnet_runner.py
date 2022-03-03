@@ -258,22 +258,40 @@ class ResnetRunner(object):
 
                 best_val_epoch = epoch
 
-                snapshot(
-                    model.module.inner_net if self.use_gpu else model.inner_net,
-                    optimizer,
-                    self.config,
-                    epoch + 1,
-                    tag='best_phase1')
+                if 'orig' in self.config.model.name:
+                    snapshot(
+                        model.module if self.use_gpu else model,
+                        optimizer,
+                        self.config,
+                        epoch + 1,
+                        tag='best_loss')
+
+                else:
+                    snapshot(
+                        model.module.inner_net if self.use_gpu else model.inner_net,
+                        optimizer,
+                        self.config,
+                        epoch + 1,
+                        tag='best_phase1')
 
             if val_acc < best_val_acc:
                 best_val_acc = val_acc
 
-                snapshot(
-                    model.module.inner_net if self.use_gpu else model.inner_net,
-                    optimizer,
-                    self.config,
-                    epoch + 1,
-                    tag='best_acc_phase1')
+                if 'orig' in self.config.model.name:
+                    snapshot(
+                        model.module if self.use_gpu else model,
+                        optimizer,
+                        self.config,
+                        epoch + 1,
+                        tag='best_acc')
+
+                else:
+                    snapshot(
+                        model.module.inner_net if self.use_gpu else model.inner_net,
+                        optimizer,
+                        self.config,
+                        epoch + 1,
+                        tag='best_acc_phase1')
 
             self.logger.info("Current Best Validation Loss = {:.6}".format(best_val_loss))
 
