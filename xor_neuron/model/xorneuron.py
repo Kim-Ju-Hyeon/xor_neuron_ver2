@@ -5,7 +5,6 @@ import torch
 import torch.nn as nn
 from torch import einsum
 
-
 EPS = float(np.finfo(np.float32).eps)
 
 __all__ = ['InnerNet_V2', 'QuadraticInnerNet']
@@ -57,6 +56,8 @@ class QuadraticInnerNet(nn.Module):
         self.A = nn.Linear(2, 2, bias=False)
         self.b = nn.Linear(2, 1, bias=True)
 
+        self.relu = nn.ReLU(inplace=True)
+
     def forward(self, x):
         if len(x.shape) == 2:
             inputs = x.reshape(x.shape[0], -1, 2)
@@ -80,4 +81,4 @@ class QuadraticInnerNet(nn.Module):
         else:
             raise ValueError('Invalid input shape')
 
-        return out
+        return self.relu(out)
