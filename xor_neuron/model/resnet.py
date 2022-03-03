@@ -329,32 +329,26 @@ class ResNet(nn.Module):
         return x
 
 
-def _resnet(arch, block, layers, pretrained, progress, device, **kwargs):
-    model = ResNet(block, layers, **kwargs)
-    if pretrained:
-        script_dir = os.path.dirname(__file__)
-        state_dict = torch.load(
-            script_dir + "/state_dicts/" + arch + ".pt", map_location=device
-        )
-        model.load_state_dict(state_dict)
+def _resnet(arch, block, layers, pretrained, progress, device):
+    model = ResNet(block, layers)
     return model
 
 
-def orig_resnet18(pretrained=False, progress=True, device="cpu", **kwargs):
+def orig_resnet18(pretrained=False, progress=True, device="cpu"):
     return _resnet(
-        "resnet18", BasicBlock, [2, 2, 2, 2], pretrained, progress, device, **kwargs
+        "resnet18", BasicBlock, [2, 2, 2, 2], pretrained, progress, device
     )
 
 
-def orig_resnet34(pretrained=False, progress=True, device="cpu", **kwargs):
+def orig_resnet34(pretrained=False, progress=True, device="cpu"):
     return _resnet(
-        "resnet34", BasicBlock, [3, 4, 6, 3], pretrained, progress, device, **kwargs
+        "resnet34", BasicBlock, [3, 4, 6, 3], pretrained, progress, device
     )
 
 
-def orig_resnet50(pretrained=False, progress=True, device="cpu", **kwargs):
+def orig_resnet50(pretrained=False, progress=True, device="cpu"):
     return _resnet(
-        "resnet50", Bottleneck, [3, 4, 6, 3], pretrained, progress, device, **kwargs
+        "resnet50", Bottleneck, [3, 4, 6, 3], pretrained, progress, device
     )
 
 
