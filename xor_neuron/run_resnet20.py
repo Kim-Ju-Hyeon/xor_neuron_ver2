@@ -4,6 +4,7 @@ import torch
 import traceback
 import numpy as np
 import click
+import numpy.random as npr
 
 from easydict import EasyDict as edict
 import yaml
@@ -17,40 +18,45 @@ torch.set_printoptions(profile='full')
 
 @click.command()
 @click.option('--exp_path', type=str, default="./config/resnet/xor_resnet.yaml")
-def main(exp_path):
+@click.option('--exp_num', type=int, default=1)
+def main(exp_path, exp_num):
     config = get_config(exp_path)
-    config.seed = np.random.randint(10000)
 
-    np.random.seed(config.seed)
-    torch.manual_seed(config.seed)
-    torch.cuda.manual_seed_all(config.seed)
+    seed = npr.choice(10000, size=exp_num, replace=False)
 
-    log_file = os.path.join(config.save_dir, "log_exp_{}.txt".format(1))
-    logger = setup_logging('INFO', log_file)
-    logger.info("Writing log file to {}".format(log_file))
-    logger.info("Exp instance id = {}".format(1))
+    for num in range(exp_num):
+        config.seed = seed[num]
 
-    try:
-        runner = ResnetRunner(config)
+        np.random.seed(config.seed)
+        torch.manual_seed(config.seed)
+        torch.cuda.manual_seed_all(config.seed)
 
-        if config.model.inner_net == 'quad':
-            runner.train_phase1()
-            runner.train_phase2()
+        log_file = os.path.join(config.save_dir, "log_exp_{}.txt".format(1))
+        logger = setup_logging('INFO', log_file)
+        logger.info("Writing log file to {}".format(log_file))
+        logger.info("Exp instance id = {}".format(1))
 
-        elif 'orig' in config.model.name:
-            runner.train_phase1()
+        try:
+            runner = ResnetRunner(config)
 
-        elif config.without_pretrain:
-            runner.train_phase1()
-            runner.train_phase2()
+            if config.model.inner_net == 'quad':
+                runner.train_phase1()
+                runner.train_phase2()
 
-        else:
-            runner.pretrain(1)
-            runner.train_phase1()
-            runner.train_phase2()
+            elif 'orig' in config.model.name:
+                runner.train_phase1()
 
-    except:
-        logger.error(traceback.format_exc())
+            elif config.without_pretrain:
+                runner.train_phase1()
+                runner.train_phase2()
+
+            else:
+                runner.pretrain(1)
+                runner.train_phase1()
+                runner.train_phase2()
+
+        except:
+            logger.error(traceback.format_exc())
 
 
     sys.exit(0)
