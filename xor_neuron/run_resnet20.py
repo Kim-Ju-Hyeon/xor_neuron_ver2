@@ -20,11 +20,10 @@ torch.set_printoptions(profile='full')
 @click.option('--exp_path', type=str, default="./config/resnet/xor_resnet.yaml")
 @click.option('--exp_num', type=int, default=1)
 def main(exp_path, exp_num):
-    config = get_config(exp_path)
-
     seed = npr.choice(10000, size=exp_num, replace=False)
 
     for num in range(exp_num):
+        config = get_config(exp_path)
         config.seed = seed[num]
 
         np.random.seed(config.seed)
