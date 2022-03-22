@@ -330,7 +330,7 @@ class ResnetRunner(object):
     def train_phase2(self):
         print("train_phase2 Start")
         print("-----------------------------------------------------------------")
-        self.train_conf.max_epoch = self.train_conf.max_epoch * 2
+        # self.train_conf.max_epoch = self.train_conf.max_epoch * 2
 
         if self.dataset_conf.name == 'mnist':
             transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize([0.5], [0.5])])
